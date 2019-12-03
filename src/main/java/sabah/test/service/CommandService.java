@@ -40,11 +40,11 @@ public class CommandService implements CommandServiceInterface {
 
         var commands = commandRepository.findAllByOrderByRequestedMinuteAsc();
         for (var command : commands) {
-            var insertedMinute = command.getRequestedMinute();
-            var commandsBySingleMinute = commandsByMinutes.get(insertedMinute);
+            var requestedMinute = command.getRequestedMinute();
+            var commandsBySingleMinute = commandsByMinutes.get(requestedMinute);
             if (null == commandsBySingleMinute) {
-                commandsByMinutes.put(insertedMinute, new HashMap<>());
-                commandsBySingleMinute = commandsByMinutes.get(insertedMinute);
+                commandsByMinutes.put(requestedMinute, new HashMap<>());
+                commandsBySingleMinute = commandsByMinutes.get(requestedMinute);
             }
             commandsBySingleMinute.put(command.getCommand(), command.getCount());
         }

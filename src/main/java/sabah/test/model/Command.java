@@ -44,8 +44,8 @@ public class Command implements Serializable {
         return requestedMinute;
     }
 
-    public void setRequestedMinute(LocalDateTime insertedMinute) {
-        this.requestedMinute = insertedMinute;
+    public void setRequestedMinute(LocalDateTime requestedMinute) {
+        this.requestedMinute = requestedMinute;
     }
 
     public int getCount() {
