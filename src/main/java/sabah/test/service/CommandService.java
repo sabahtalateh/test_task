@@ -7,12 +7,12 @@ import sabah.test.model.Command;
 import sabah.test.repository.CommandRepository;
 
 import java.time.LocalDateTime;
+import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
-public class CommandService {
+public class CommandService implements CommandServiceInterface {
     private final CommandRepository commandRepository;
 
     public CommandService(CommandRepository commandRepository) {
@@ -20,14 +20,16 @@ public class CommandService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Command storeCommand(String cmd) {
-        LocalDateTime currentMinute = LocalDateTime.now().withSecond(0).withNano(0);
-
-        Command command = commandRepository.findByCommandAndInsertedMinute(cmd, currentMinute);
-        if (null == command) {
+    public Command storeCommand(String cmd, LocalDateTime requestedAt) {
+        var requestedMinute = requestedAt.withSecond(0).withNano(0);
+        var commandAtMinute = commandRepository.findByCommandAndRequestedMinute(cmd, requestedMinute);
+        Command command;
+        if (commandAtMinute.isEmpty()) {
             command = new Command();
             command.setCommand(cmd);
-            command.setInsertedMinute(currentMinute);
+            command.setRequestedMinute(requestedMinute);
+        } else {
+            command = commandAtMinute.get();
         }
         command.increaseCount();
         return commandRepository.save(command);
@@ -36,10 +38,10 @@ public class CommandService {
     public Map<LocalDateTime, Map<String, Integer>> statistic() {
         Map<LocalDateTime, Map<String, Integer>> commandsByMinutes = new HashMap<>();
 
-        List<Command> commands = commandRepository.findAllByOrderByInsertedMinuteAsc();
-        for (Command command : commands) {
-            LocalDateTime insertedMinute = command.getInsertedMinute();
-            Map<String, Integer> commandsBySingleMinute = commandsByMinutes.get(insertedMinute);
+        var commands = commandRepository.findAllByOrderByRequestedMinuteAsc();
+        for (var command : commands) {
+            var insertedMinute = command.getRequestedMinute();
+            var commandsBySingleMinute = commandsByMinutes.get(insertedMinute);
             if (null == commandsBySingleMinute) {
                 commandsByMinutes.put(insertedMinute, new HashMap<>());
                 commandsBySingleMinute = commandsByMinutes.get(insertedMinute);
@@ -47,5 +49,15 @@ public class CommandService {
             commandsBySingleMinute.put(command.getCommand(), command.getCount());
         }
         return commandsByMinutes;
+    }
+
+    public Map.Entry<LocalDateTime, Map<String, Integer>> getStatisticForPrevMinute(LocalDateTime time) {
+        var prevMinute = time.withSecond(0).withNano(0).minusMinutes(1);
+        var commands = commandRepository.findAllByRequestedMinute(prevMinute);
+        Map<String, Integer> commandsMap = new HashMap<>();
+        for (Command c : commands) {
+            commandsMap.put(c.getCommand(), c.getCount());
+        }
+        return new AbstractMap.SimpleEntry<>(prevMinute, commandsMap);
     }
 }

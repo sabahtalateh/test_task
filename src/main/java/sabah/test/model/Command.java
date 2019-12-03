@@ -10,20 +10,20 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "commands", indexes = {
-        @Index(columnList = "command, inserted_minute", name = "command_inserted_at_minute_idx"),
+        @Index(columnList = "command, requested_minute", name = "command_requested_at_minute_idx"),
 })
 public class Command implements Serializable {
     @Id
-    @GeneratedValue(generator = "command_generator")
-    @SequenceGenerator(name = "command_generator", sequenceName = "command_sequence")
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
     @Column(name = "command", nullable = false, updatable = false)
     private String command;
 
-    @Column(name = "inserted_minute", nullable = false, updatable = false)
-    private LocalDateTime insertedMinute;
+    @Column(name = "requested_minute", nullable = false, updatable = false)
+    private LocalDateTime requestedMinute;
 
     @Column(name = "count", nullable = false)
     private int count = 0;
@@ -40,12 +40,12 @@ public class Command implements Serializable {
         this.command = command;
     }
 
-    public LocalDateTime getInsertedMinute() {
-        return insertedMinute;
+    public LocalDateTime getRequestedMinute() {
+        return requestedMinute;
     }
 
-    public void setInsertedMinute(LocalDateTime insertedMinute) {
-        this.insertedMinute = insertedMinute;
+    public void setRequestedMinute(LocalDateTime insertedMinute) {
+        this.requestedMinute = insertedMinute;
     }
 
     public int getCount() {

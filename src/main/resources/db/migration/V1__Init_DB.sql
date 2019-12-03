@@ -1,10 +1,9 @@
 create table commands
 (
-    id              int8         not null,
-    command         varchar(255) not null,
-    count           int4         not null,
-    inserted_minute timestamp    not null,
-    primary key (id)
+    id               serial primary key,
+    command          varchar(255) not null,
+    count            int4         not null,
+    requested_minute timestamp    not null
 );
-create index command_inserted_at_minute_idx on commands (command, inserted_minute);
-create sequence command_sequence start 1000 increment 50;
+
+create index command_requested_at_minute_idx on commands (command, requested_minute);
